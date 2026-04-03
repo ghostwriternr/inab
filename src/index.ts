@@ -7,7 +7,6 @@ import {
   handleTokenExchangeCallback,
 } from './auth/oauth-handler'
 import type { YnabOAuthProps } from './auth/ynab-auth'
-import type { ExecutionContextWithExports } from './executor'
 
 import specData from '../spec/ynab-spec.json'
 
@@ -62,7 +61,7 @@ function createMcpHandler() {
 
     const server = await createServer(
       c.env,
-      ctx as unknown as ExecutionContextWithExports,
+      ctx,
       props.ynabAccessToken,
       specJson,
     )

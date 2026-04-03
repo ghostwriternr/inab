@@ -2,14 +2,6 @@ interface ExecutorEntrypoint {
   evaluate(): Promise<{ result: unknown; err?: string; stack?: string }>
 }
 
-// ctx.exports is provided by the Worker Loader API at runtime
-// to access named exports from the main module (e.g. GlobalOutbound)
-export interface ExecutionContextWithExports extends ExecutionContext {
-  exports: {
-    GlobalOutbound(opts: { props: { apiToken: string } }): Fetcher
-  }
-}
-
 export function buildSearchWorkerCode(specJson: string, agentCode: string): string {
   return `
 import { WorkerEntrypoint } from "cloudflare:workers";
@@ -97,7 +89,7 @@ export function createSearchExecutor(env: Env, specJson: string) {
     const workerId = `ynab-search-${crypto.randomUUID()}`
 
     const worker = env.LOADER.get(workerId, () => ({
-      compatibilityDate: '2025-04-01',
+      compatibilityDate: '2026-03-23',
       globalOutbound: null,
       mainModule: 'worker.js',
       modules: { 'worker.js': buildSearchWorkerCode(specJson, code) }
@@ -111,12 +103,12 @@ export function createSearchExecutor(env: Env, specJson: string) {
   }
 }
 
-export function createCodeExecutor(env: Env, ctx: ExecutionContextWithExports) {
+export function createCodeExecutor(env: Env, ctx: ExecutionContext) {
   return async (code: string, apiToken: string): Promise<unknown> => {
     const workerId = `ynab-exec-${crypto.randomUUID()}`
 
     const worker = env.LOADER.get(workerId, () => ({
-      compatibilityDate: '2025-04-01',
+      compatibilityDate: '2026-03-23',
       globalOutbound: ctx.exports.GlobalOutbound({ props: { apiToken } }),
       mainModule: 'worker.js',
       modules: { 'worker.js': buildExecuteWorkerCode(env.YNAB_API_BASE, code) }

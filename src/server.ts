@@ -1,7 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import { createSearchExecutor, createCodeExecutor } from './executor'
-import type { ExecutionContextWithExports } from './executor'
 import { truncateContent } from './truncate'
 
 const YNAB_TYPES = `
@@ -37,7 +36,7 @@ declare const ynab: {
 
 export async function createServer(
   env: Env,
-  ctx: ExecutionContextWithExports,
+  ctx: ExecutionContext,
   apiToken: string,
   specJson: string
 ): Promise<McpServer> {
