@@ -6,13 +6,6 @@
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "logs": { "enabled": true } },
   "worker_loaders": [{ "binding": "LOADER" }],
-  "services": [
-    {
-      "binding": "GLOBAL_OUTBOUND",
-      "service": "ynab-mcp-dev",
-      "entrypoint": "GlobalOutbound"
-    }
-  ],
   "kv_namespaces": [{ "binding": "OAUTH_KV" }],
   "vars": {
     "YNAB_API_BASE": "https://api.ynab.com/v1",
@@ -24,13 +17,6 @@
     "staging": {
       "name": "ynab-mcp-staging",
       "worker_loaders": [{ "binding": "LOADER" }],
-      "services": [
-        {
-          "binding": "GLOBAL_OUTBOUND",
-          "service": "ynab-mcp-staging",
-          "entrypoint": "GlobalOutbound"
-        }
-      ],
       "kv_namespaces": [
         { "binding": "OAUTH_KV", "id": "placeholder-staging" }
       ],
@@ -43,13 +29,6 @@
     "production": {
       "name": "ynab-mcp",
       "worker_loaders": [{ "binding": "LOADER" }],
-      "services": [
-        {
-          "binding": "GLOBAL_OUTBOUND",
-          "service": "ynab-mcp",
-          "entrypoint": "GlobalOutbound"
-        }
-      ],
       "kv_namespaces": [
         { "binding": "OAUTH_KV", "id": "placeholder-production" }
       ],
