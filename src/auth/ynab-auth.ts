@@ -11,15 +11,22 @@ export interface YnabOAuthProps {
   ynabTokenExpiry: number
 }
 
-export async function generatePKCECodes(): Promise<{ codeVerifier: string; codeChallenge: string }> {
+export async function generatePKCECodes(): Promise<{
+  codeVerifier: string
+  codeChallenge: string
+}> {
   const array = new Uint8Array(32)
   crypto.getRandomValues(array)
   const codeVerifier = btoa(String.fromCharCode(...array))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
 
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier))
   const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
 
   return { codeVerifier, codeChallenge }
 }
@@ -55,13 +62,13 @@ export async function exchangeYnabCode(params: {
     redirect_uri: params.redirectUri,
     grant_type: 'authorization_code',
     code: params.code,
-    code_verifier: params.codeVerifier,
+    code_verifier: params.codeVerifier
   })
 
   const response = await fetch(`${params.oauthBase}/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString(),
+    body: body.toString()
   })
 
   if (!response.ok) {
@@ -82,13 +89,13 @@ export async function refreshYnabToken(params: {
     client_id: params.clientId,
     client_secret: params.clientSecret,
     grant_type: 'refresh_token',
-    refresh_token: params.refreshToken,
+    refresh_token: params.refreshToken
   })
 
   const response = await fetch(`${params.oauthBase}/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString(),
+    body: body.toString()
   })
 
   if (!response.ok) {
@@ -101,7 +108,7 @@ export async function refreshYnabToken(params: {
 
 export async function resolveYnabUserId(accessToken: string, apiBase: string): Promise<string> {
   const response = await fetch(`${apiBase}/user`, {
-    headers: { Authorization: `Bearer ${accessToken}` },
+    headers: { Authorization: `Bearer ${accessToken}` }
   })
   if (!response.ok) {
     throw new Error(`Failed to resolve YNAB user: ${response.status}`)

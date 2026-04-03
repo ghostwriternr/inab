@@ -21,7 +21,12 @@ async function main() {
 
   mkdirSync('spec', { recursive: true })
   writeFileSync(OUTPUT_PATH, json)
-  console.log(`Wrote processed spec to ${OUTPUT_PATH} (${json.length} bytes, ${Object.keys(processed.paths ?? {}).length} paths)`)
+  console.log(
+    `Wrote processed spec to ${OUTPUT_PATH} (${json.length} bytes, ${Object.keys(processed.paths ?? {}).length} paths)`
+  )
 }
 
-main().catch((err) => { console.error('Failed:', err); process.exit(1) })
+main().catch((err) => {
+  console.error('Failed:', err)
+  process.exit(1)
+})

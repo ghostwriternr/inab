@@ -31,8 +31,7 @@
 	],
 	"vars": {
 		"YNAB_API_BASE": "https://api.ynab.com/v1",
-		"YNAB_OAUTH_BASE": "https://app.ynab.com/oauth",
-		"ALLOWED_ORIGINS": ""
+		"YNAB_OAUTH_BASE": "https://app.ynab.com/oauth"
 	},
 	"dev": {
 		"port": 2529

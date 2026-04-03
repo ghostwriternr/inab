@@ -1,8 +1,7 @@
 {
   "name": "inab",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Token-efficient MCP server for the YNAB API using Code Mode",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",

@@ -13,7 +13,10 @@ describe('buildSearchWorkerCode', () => {
 
 describe('buildExecuteWorkerCode', () => {
   it('embeds apiBase and ynab.request helper', () => {
-    const code = buildExecuteWorkerCode('https://api.ynab.com/v1', 'return await ynab.request("/plans")')
+    const code = buildExecuteWorkerCode(
+      'https://api.ynab.com/v1',
+      'return await ynab.request("/plans")'
+    )
     expect(code).toContain('ynab')
     expect(code).toContain('request')
     expect(code).toContain('https://api.ynab.com/v1')

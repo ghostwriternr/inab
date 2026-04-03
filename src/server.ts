@@ -52,26 +52,24 @@ export async function createServer(
       inputSchema: {
         code: z
           .string()
-          .describe(
-            'JavaScript code. Must return a value. Has access to `spec` global.'
-          ),
-      },
+          .describe('JavaScript code. Must return a value. Has access to `spec` global.')
+      }
     },
     async ({ code }) => {
       try {
         const result = await search(code)
         return {
-          content: [{ type: 'text' as const, text: truncateContent(result) }],
+          content: [{ type: 'text' as const, text: truncateContent(result) }]
         }
       } catch (err) {
         return {
           content: [
             {
               type: 'text' as const,
-              text: `Error: ${err instanceof Error ? err.message : err}`,
-            },
+              text: `Error: ${err instanceof Error ? err.message : err}`
+            }
           ],
-          isError: true,
+          isError: true
         }
       }
     }
@@ -85,26 +83,24 @@ export async function createServer(
       inputSchema: {
         code: z
           .string()
-          .describe(
-            'JavaScript code. Must return a value. Has access to `ynab.request()`.'
-          ),
-      },
+          .describe('JavaScript code. Must return a value. Has access to `ynab.request()`.')
+      }
     },
     async ({ code }) => {
       try {
         const result = await execute(code, apiToken)
         return {
-          content: [{ type: 'text' as const, text: truncateContent(result) }],
+          content: [{ type: 'text' as const, text: truncateContent(result) }]
         }
       } catch (err) {
         return {
           content: [
             {
               type: 'text' as const,
-              text: `Error: ${err instanceof Error ? err.message : err}`,
-            },
+              text: `Error: ${err instanceof Error ? err.message : err}`
+            }
           ],
-          isError: true,
+          isError: true
         }
       }
     }

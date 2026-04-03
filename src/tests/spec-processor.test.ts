@@ -11,7 +11,10 @@ describe('resolveRefs', () => {
       components: { schemas: { T: { type: 'object', properties: { id: { type: 'string' } } } } }
     }
     const resolved = r(resolveRefs(spec))
-    expect(resolved.paths['/test'].get).toEqual({ type: 'object', properties: { id: { type: 'string' } } })
+    expect(resolved.paths['/test'].get).toEqual({
+      type: 'object',
+      properties: { id: { type: 'string' } }
+    })
   })
 
   it('resolves nested $refs', () => {
@@ -28,7 +31,11 @@ describe('resolveRefs', () => {
 
   it('handles circular references without infinite loop', () => {
     const spec = {
-      components: { schemas: { Node: { type: 'object', properties: { child: { $ref: '#/components/schemas/Node' } } } } }
+      components: {
+        schemas: {
+          Node: { type: 'object', properties: { child: { $ref: '#/components/schemas/Node' } } }
+        }
+      }
     }
     const resolved = r(resolveRefs(spec))
     expect(resolved.components.schemas.Node.properties.child).toBeDefined()
@@ -51,8 +58,17 @@ describe('resolveRefs', () => {
 describe('processSpec', () => {
   it('retains paths, operations, parameters, and schemas', () => {
     const raw = {
-      openapi: '3.1.1', info: { title: 'YNAB', version: '1.82.0' },
-      paths: { '/plans': { get: { summary: 'List', parameters: [{ name: 'x', in: 'query' }], responses: { 200: { description: 'OK' } } } } },
+      openapi: '3.1.1',
+      info: { title: 'YNAB', version: '1.82.0' },
+      paths: {
+        '/plans': {
+          get: {
+            summary: 'List',
+            parameters: [{ name: 'x', in: 'query' }],
+            responses: { 200: { description: 'OK' } }
+          }
+        }
+      },
       components: { schemas: { Plan: { type: 'object' } } }
     }
     const processed = r(processSpec(raw))
@@ -63,7 +79,8 @@ describe('processSpec', () => {
 
   it('strips x- extension fields', () => {
     const raw = {
-      openapi: '3.1.1', info: { title: 'T', version: '1.0' },
+      openapi: '3.1.1',
+      info: { title: 'T', version: '1.0' },
       paths: { '/test': { get: { summary: 'T', 'x-custom': 'remove', responses: {} } } },
       components: { schemas: {} }
     }

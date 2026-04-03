@@ -6,7 +6,7 @@ import {
   getYnabAuthorizationURL,
   exchangeYnabCode,
   refreshYnabToken,
-  resolveYnabUserId,
+  resolveYnabUserId
 } from './ynab-auth'
 import type { YnabOAuthProps } from './ynab-auth'
 import {
@@ -18,14 +18,14 @@ import {
   parseRedirectApproval,
   renderApprovalDialog,
   renderErrorPage,
-  OAuthError,
+  OAuthError
 } from './oauth-utils'
 
 import type {
   AuthRequest,
   OAuthHelpers,
   TokenExchangeCallbackOptions,
-  TokenExchangeCallbackResult,
+  TokenExchangeCallbackResult
 } from '@cloudflare/workers-oauth-provider'
 
 interface AuthEnv extends Env {
@@ -48,7 +48,7 @@ const SKEW_BUFFER_MS = 5 * 60 * 1000
  * refresh it proactively.
  */
 export async function handleTokenExchangeCallback(
-  options: TokenExchangeCallbackOptions,
+  options: TokenExchangeCallbackOptions
 ): Promise<TokenExchangeCallbackResult | undefined> {
   if (options.grantType !== 'refresh_token') {
     return undefined
@@ -60,8 +60,7 @@ export async function handleTokenExchangeCallback(
   }
 
   const needsRefresh =
-    Date.now() + MCP_ACCESS_TOKEN_TTL * 1000 + SKEW_BUFFER_MS >=
-    props.ynabTokenExpiry
+    Date.now() + MCP_ACCESS_TOKEN_TTL * 1000 + SKEW_BUFFER_MS >= props.ynabTokenExpiry
 
   if (!needsRefresh) {
     return undefined
@@ -71,18 +70,18 @@ export async function handleTokenExchangeCallback(
     refreshToken: props.ynabRefreshToken,
     clientId: env.YNAB_CLIENT_ID,
     clientSecret: env.YNAB_CLIENT_SECRET,
-    oauthBase: env.YNAB_OAUTH_BASE,
+    oauthBase: env.YNAB_OAUTH_BASE
   })
 
   const newProps: YnabOAuthProps = {
     ynabAccessToken: tokenResponse.access_token,
     ynabRefreshToken: tokenResponse.refresh_token,
-    ynabTokenExpiry: Date.now() + tokenResponse.expires_in * 1000,
+    ynabTokenExpiry: Date.now() + tokenResponse.expires_in * 1000
   }
 
   return {
     newProps,
-    accessTokenTTL: MCP_ACCESS_TOKEN_TTL,
+    accessTokenTTL: MCP_ACCESS_TOKEN_TTL
   }
 }
 
@@ -98,59 +97,46 @@ export function createAuthHandlers() {
       const oauthReqInfo = await env.OAUTH_PROVIDER.parseAuthRequest(c.req.raw)
 
       if (!oauthReqInfo.clientId) {
-        return new OAuthError(
-          'invalid_request',
-          'Missing client_id',
-        ).toHtmlResponse()
+        return new OAuthError('invalid_request', 'Missing client_id').toHtmlResponse()
       }
 
       // Check if client was previously approved — skip consent if so
       if (
-        await clientIdAlreadyApproved(
-          c.req.raw,
-          oauthReqInfo.clientId,
-          env.COOKIE_ENCRYPTION_KEY,
-        )
+        await clientIdAlreadyApproved(c.req.raw, oauthReqInfo.clientId, env.COOKIE_ENCRYPTION_KEY)
       ) {
         const { codeChallenge, codeVerifier } = await generatePKCECodes()
-        const stateToken = await createOAuthState(
-          oauthReqInfo,
-          env.OAUTH_KV,
-          codeVerifier,
-        )
-        const { setCookie: sessionCookie } =
-          await bindStateToSession(stateToken)
+        const stateToken = await createOAuthState(oauthReqInfo, env.OAUTH_KV, codeVerifier)
+        const { setCookie: sessionCookie } = await bindStateToSession(stateToken)
 
         const ynabAuthUrl = getYnabAuthorizationURL({
           clientId: env.YNAB_CLIENT_ID,
           redirectUri: new URL('/ynab/callback', c.req.url).href,
           codeChallenge,
           state: stateToken,
-          oauthBase: env.YNAB_OAUTH_BASE,
+          oauthBase: env.YNAB_OAUTH_BASE
         })
 
         return new Response(null, {
           status: 302,
           headers: {
             Location: ynabAuthUrl,
-            'Set-Cookie': sessionCookie,
-          },
+            'Set-Cookie': sessionCookie
+          }
         })
       }
 
       // Client not approved — show consent dialog
-      const { token: csrfToken, setCookie: csrfCookie } =
-        generateCSRFProtection()
+      const { token: csrfToken, setCookie: csrfCookie } = generateCSRFProtection()
 
       return renderApprovalDialog(c.req.raw, {
         client: await env.OAUTH_PROVIDER.lookupClient(oauthReqInfo.clientId),
         server: {
           name: 'YNAB MCP',
-          description: 'Access your YNAB budget data through the Model Context Protocol.',
+          description: 'Access your YNAB budget data through the Model Context Protocol.'
         },
         state: { oauthReqInfo },
         csrfToken,
-        setCookie: csrfCookie,
+        setCookie: csrfCookie
       })
     } catch (e) {
       if (e instanceof OAuthError) return e.toHtmlResponse()
@@ -160,7 +146,7 @@ export function createAuthHandlers() {
         'Server Error',
         'An unexpected error occurred. Please try again.',
         `Error ID: ${errorId}`,
-        500,
+        500
       )
     }
   })
@@ -168,26 +154,16 @@ export function createAuthHandlers() {
   // POST /authorize — Handle consent form submission
   app.post('/authorize', async (c) => {
     try {
-      const { state, headers } = await parseRedirectApproval(
-        c.req.raw,
-        env.COOKIE_ENCRYPTION_KEY,
-      )
+      const { state, headers } = await parseRedirectApproval(c.req.raw, env.COOKIE_ENCRYPTION_KEY)
 
       if (!state.oauthReqInfo) {
-        return new OAuthError(
-          'invalid_request',
-          'Missing OAuth request info',
-        ).toHtmlResponse()
+        return new OAuthError('invalid_request', 'Missing OAuth request info').toHtmlResponse()
       }
 
       const oauthReqInfo = state.oauthReqInfo as AuthRequest
 
       const { codeChallenge, codeVerifier } = await generatePKCECodes()
-      const stateToken = await createOAuthState(
-        oauthReqInfo,
-        env.OAUTH_KV,
-        codeVerifier,
-      )
+      const stateToken = await createOAuthState(oauthReqInfo, env.OAUTH_KV, codeVerifier)
       const { setCookie: sessionCookie } = await bindStateToSession(stateToken)
 
       const ynabAuthUrl = getYnabAuthorizationURL({
@@ -195,7 +171,7 @@ export function createAuthHandlers() {
         redirectUri: new URL('/ynab/callback', c.req.url).href,
         codeChallenge,
         state: stateToken,
-        oauthBase: env.YNAB_OAUTH_BASE,
+        oauthBase: env.YNAB_OAUTH_BASE
       })
 
       const responseHeaders = new Headers()
@@ -207,7 +183,7 @@ export function createAuthHandlers() {
 
       return new Response(null, {
         status: 302,
-        headers: responseHeaders,
+        headers: responseHeaders
       })
     } catch (e) {
       if (e instanceof OAuthError) return e.toHtmlResponse()
@@ -217,7 +193,7 @@ export function createAuthHandlers() {
         'Server Error',
         'An unexpected error occurred. Please try again.',
         `Error ID: ${errorId}`,
-        500,
+        500
       )
     }
   })
@@ -228,33 +204,23 @@ export function createAuthHandlers() {
       // Handle error callbacks from YNAB
       const error = c.req.query('error')
       if (error) {
-        const errorDescription =
-          c.req.query('error_description') || 'Authorization was denied'
-        return renderErrorPage(
-          'Authorization Failed',
-          errorDescription,
-          `Error: ${error}`,
-          400,
-        )
+        const errorDescription = c.req.query('error_description') || 'Authorization was denied'
+        return renderErrorPage('Authorization Failed', errorDescription, `Error: ${error}`, 400)
       }
 
       const code = c.req.query('code')
       if (!code) {
-        return new OAuthError(
-          'invalid_request',
-          'Missing code',
-        ).toHtmlResponse()
+        return new OAuthError('invalid_request', 'Missing code').toHtmlResponse()
       }
 
       // Validate state using dual validation (KV + session cookie)
-      const { oauthReqInfo, codeVerifier, clearCookie } =
-        await validateOAuthState(c.req.raw, env.OAUTH_KV)
+      const { oauthReqInfo, codeVerifier, clearCookie } = await validateOAuthState(
+        c.req.raw,
+        env.OAUTH_KV
+      )
 
       if (!oauthReqInfo.clientId) {
-        return new OAuthError(
-          'invalid_request',
-          'Invalid OAuth request info',
-        ).toHtmlResponse()
+        return new OAuthError('invalid_request', 'Invalid OAuth request info').toHtmlResponse()
       }
 
       // Exchange code for tokens and ensure client is registered
@@ -265,24 +231,21 @@ export function createAuthHandlers() {
           codeVerifier,
           clientId: env.YNAB_CLIENT_ID,
           clientSecret: env.YNAB_CLIENT_SECRET,
-          oauthBase: env.YNAB_OAUTH_BASE,
+          oauthBase: env.YNAB_OAUTH_BASE
         }),
         env.OAUTH_PROVIDER.createClient({
           clientId: oauthReqInfo.clientId,
-          tokenEndpointAuthMethod: 'none',
-        }),
+          tokenEndpointAuthMethod: 'none'
+        })
       ])
 
       // Resolve YNAB user ID
-      const userId = await resolveYnabUserId(
-        tokenResponse.access_token,
-        env.YNAB_API_BASE,
-      )
+      const userId = await resolveYnabUserId(tokenResponse.access_token, env.YNAB_API_BASE)
 
       const props: YnabOAuthProps = {
         ynabAccessToken: tokenResponse.access_token,
         ynabRefreshToken: tokenResponse.refresh_token,
-        ynabTokenExpiry: Date.now() + tokenResponse.expires_in * 1000,
+        ynabTokenExpiry: Date.now() + tokenResponse.expires_in * 1000
       }
 
       // Complete authorization
@@ -291,15 +254,15 @@ export function createAuthHandlers() {
         userId,
         metadata: { label: `YNAB user ${userId}` },
         scope: oauthReqInfo.scope,
-        props,
+        props
       })
 
       return new Response(null, {
         status: 302,
         headers: {
           Location: redirectTo,
-          'Set-Cookie': clearCookie,
-        },
+          'Set-Cookie': clearCookie
+        }
       })
     } catch (e) {
       if (e instanceof OAuthError) return e.toHtmlResponse()
@@ -309,7 +272,7 @@ export function createAuthHandlers() {
         'Server Error',
         'An unexpected error occurred during authorization.',
         `Error ID: ${errorId}`,
-        500,
+        500
       )
     }
   })

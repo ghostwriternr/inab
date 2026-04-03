@@ -29,6 +29,7 @@ inab/
 │   │   ├── oauth-utils.ts         # CSRF, state management, cookie helpers, approval dialog
 │   │   └── ynab-auth.ts           # YNAB OAuth (PKCE, token exchange, refresh, user resolution)
 │   └── tests/
+│       ├── index.test.ts          # Integration tests (health check, auth, OAuth)
 │       ├── executor.test.ts       # Worker code generation tests
 │       ├── spec-processor.test.ts # $ref resolution & spec processing tests
 │       └── truncate.test.ts       # Truncation behavior tests
@@ -36,7 +37,7 @@ inab/
 │   └── build-spec.ts              # Fetch YNAB OpenAPI spec (YAML), process, write to spec/
 ├── spec/
 │   └── ynab-spec.json             # Processed OpenAPI spec (gitignored, built via build:spec)
-├── wrangler.jsonc                 # Workers config (dev/staging/production)
+├── wrangler.jsonc                 # Workers config (single production env)
 ├── vitest.config.mts              # Vitest config with @cloudflare/vitest-pool-workers
 ├── tsconfig.json                  # TypeScript strict config
 ├── .oxfmtrc.json                  # oxfmt formatter config
@@ -65,18 +66,18 @@ Set these via `npx wrangler secret put <NAME>`:
 
 ### Bindings
 
-| Binding      | Type           | Purpose                       |
-| ------------ | -------------- | ----------------------------- |
-| `OAUTH_KV`   | KV Namespace   | OAuth state storage           |
-| `LOADER`      | Worker Loader  | Dynamic worker instantiation  |
+| Binding          | Type           | Purpose                                    |
+| ---------------- | -------------- | ------------------------------------------ |
+| `OAUTH_KV`       | KV Namespace   | OAuth state storage                        |
+| `LOADER`         | Worker Loader  | Dynamic worker instantiation               |
+| `GLOBAL_OUTBOUND`| Service        | Self-referential binding for `ctx.exports`  |
 
 ## Commands
 
 | Command                | What it does                                  |
 | ---------------------- | --------------------------------------------- |
 | `npm run dev`          | Start local dev server (wrangler dev)         |
-| `npm run deploy`       | Deploy to staging                             |
-| `npm run deploy:prod`  | Deploy to production                          |
+| `npm run deploy`       | Deploy to production                          |
 | `npm run types`        | Generate worker type definitions              |
 | `npm run typecheck`    | TypeScript type checking (no emit)            |
 | `npm run lint`         | Lint with oxlint                              |
@@ -116,13 +117,15 @@ Two tools handle all ~45 YNAB API endpoints:
 1. **`search` tool** -- Agents write JavaScript to query the pre-resolved OpenAPI spec (all `$ref`s inlined, `x-` extensions stripped). Runs in an isolated worker with **no network access** (`globalOutbound: null`).
 2. **`execute` tool** -- Agents write JavaScript using `ynab.request(path, options)` to call discovered endpoints. Runs in an isolated worker with outbound restricted to `api.ynab.com` only.
 
-### Worker Loader API
+### Dynamic Workers
 
-Code execution uses Cloudflare's Worker Loader API (`env.LOADER`) to dynamically create isolated worker instances per invocation. Each gets a unique ID (`ynab-search-<uuid>` or `ynab-exec-<uuid>`). The API token is injected by `GlobalOutbound` and never enters user code.
+Code execution uses Cloudflare's [Dynamic Workers](https://developers.cloudflare.com/dynamic-workers/) (`env.LOADER`) to create isolated worker instances per invocation. Each gets a unique ID (`ynab-search-<uuid>` or `ynab-exec-<uuid>`). The API token is injected by `GlobalOutbound` and never enters user code.
+
+The `GLOBAL_OUTBOUND` self-referential service binding in `wrangler.jsonc` is required to populate `ctx.exports`, which provides typed access to the `GlobalOutbound` entrypoint at runtime.
 
 ### GlobalOutbound
 
-`GlobalOutbound` (`src/global-outbound.ts`) is a `WorkerEntrypoint` that acts as a fetch proxy for execute isolates:
+`GlobalOutbound` (`src/global-outbound.ts`) is a `WorkerEntrypoint` that acts as a fetch proxy for execute isolates. It is passed to the Dynamic Worker via `ctx.exports.GlobalOutbound({ props: { apiToken } })`:
 
 - Restricts all outbound requests to the `YNAB_API_BASE` hostname (`api.ynab.com`)
 - Strips any `Authorization` header set by agent code

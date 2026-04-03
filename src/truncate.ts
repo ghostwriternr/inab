@@ -6,8 +6,7 @@ export function truncateContent(content: unknown): string {
   if (content === null) return 'null'
   if (content === undefined) return 'undefined'
 
-  const text =
-    typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+  const text = typeof content === 'string' ? content : JSON.stringify(content, null, 2)
 
   if (text.length <= MAX_CHARS) {
     return text
