@@ -4,7 +4,7 @@ interface ExecutorEntrypoint {
 
 // ctx.exports is provided by the Worker Loader API at runtime
 // to access named exports from the main module (e.g. GlobalOutbound)
-interface ExecutionContextWithExports extends ExecutionContext {
+export interface ExecutionContextWithExports extends ExecutionContext {
   exports: {
     GlobalOutbound(opts: { props: { apiToken: string } }): Fetcher
   }
