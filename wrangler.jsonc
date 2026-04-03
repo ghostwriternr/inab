@@ -1,42 +1,33 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "ynab-mcp-dev",
-  "main": "src/index.ts",
-  "compatibility_date": "2025-04-01",
-  "compatibility_flags": ["nodejs_compat"],
-  "observability": { "logs": { "enabled": true } },
-  "worker_loaders": [{ "binding": "LOADER" }],
-  "kv_namespaces": [{ "binding": "OAUTH_KV" }],
-  "vars": {
-    "YNAB_API_BASE": "https://api.ynab.com/v1",
-    "YNAB_OAUTH_BASE": "https://app.ynab.com/oauth",
-    "ALLOWED_ORIGINS": ""
-  },
-  "dev": { "port": 2529 },
-  "env": {
-    "staging": {
-      "name": "ynab-mcp-staging",
-      "worker_loaders": [{ "binding": "LOADER" }],
-      "kv_namespaces": [
-        { "binding": "OAUTH_KV", "id": "placeholder-staging" }
-      ],
-      "vars": {
-        "YNAB_API_BASE": "https://api.ynab.com/v1",
-        "YNAB_OAUTH_BASE": "https://app.ynab.com/oauth",
-        "ALLOWED_ORIGINS": ""
-      }
-    },
-    "production": {
-      "name": "ynab-mcp",
-      "worker_loaders": [{ "binding": "LOADER" }],
-      "kv_namespaces": [
-        { "binding": "OAUTH_KV", "id": "placeholder-production" }
-      ],
-      "vars": {
-        "YNAB_API_BASE": "https://api.ynab.com/v1",
-        "YNAB_OAUTH_BASE": "https://app.ynab.com/oauth",
-        "ALLOWED_ORIGINS": ""
-      }
-    }
-  }
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "inab",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-04-01",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"observability": {
+		"logs": {
+			"enabled": true
+		}
+	},
+	"worker_loaders": [
+		{
+			"binding": "LOADER"
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "OAUTH_KV",
+			"id": "24ddf42327f84297a364946e1e85d8f5"
+		}
+	],
+	"vars": {
+		"YNAB_API_BASE": "https://api.ynab.com/v1",
+		"YNAB_OAUTH_BASE": "https://app.ynab.com/oauth",
+		"ALLOWED_ORIGINS": ""
+	},
+	"dev": {
+		"port": 2529
+	}
 }

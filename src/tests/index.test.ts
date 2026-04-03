@@ -2,11 +2,11 @@ import { exports } from 'cloudflare:workers'
 import { describe, it, expect } from 'vitest'
 
 describe('Health check', () => {
-  it('GET / responds with ynab-mcp', async () => {
+  it('GET / responds with inab', async () => {
     const response = await exports.default.fetch('http://localhost/')
     expect(response.status).toBe(200)
     const text = await response.text()
-    expect(text).toContain('ynab-mcp')
+    expect(text).toContain('inab')
   })
 })
 

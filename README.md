@@ -1,4 +1,4 @@
-# ynab-mcp
+# inab
 
 A token-efficient MCP server exposing the full YNAB API via two code-mode tools (search + execute). Deployed to Cloudflare Workers.
 

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "inab": {
+      "type": "remote",
+      "url": "https://inab.ghostwriternr.workers.dev/mcp"
+    }
+  }
+}

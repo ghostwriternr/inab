@@ -41,7 +41,7 @@ export async function createServer(
   apiToken: string,
   specJson: string
 ): Promise<McpServer> {
-  const server = new McpServer({ name: 'ynab-mcp', version: '1.0.0' })
+  const server = new McpServer({ name: 'inab', version: '1.0.0' })
   const search = createSearchExecutor(env, specJson)
   const execute = createCodeExecutor(env, ctx)
 

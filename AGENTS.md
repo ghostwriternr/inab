@@ -2,7 +2,7 @@
 
 ## Project overview
 
-`ynab-mcp` is a token-efficient Model Context Protocol (MCP) server that exposes the full YNAB (You Need A Budget) API (~45 endpoints) using the **Code Mode** pattern. Instead of registering individual MCP tools per endpoint, it uses just two tools (`search` and `execute`) that let agents write JavaScript to query the OpenAPI spec and call APIs.
+`inab` is a token-efficient Model Context Protocol (MCP) server that exposes the full YNAB (You Need A Budget) API (~45 endpoints) using the **Code Mode** pattern. Instead of registering individual MCP tools per endpoint, it uses just two tools (`search` and `execute`) that let agents write JavaScript to query the OpenAPI spec and call APIs.
 
 Deployed to Cloudflare Workers.
 

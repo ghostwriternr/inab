@@ -25,7 +25,7 @@ type McpContext = {
 function createDefaultHandler() {
   const app = new Hono()
 
-  app.get('/', (c) => c.text('ynab-mcp'))
+  app.get('/', (c) => c.text('inab'))
   app.route('/', createAuthHandlers())
 
   return app
@@ -101,7 +101,7 @@ export default {
       clientRegistrationEndpoint: '/register',
       tokenExchangeCallback: (options) => handleTokenExchangeCallback(options),
       resourceMetadata: {
-        resource_name: 'YNAB MCP Server',
+        resource_name: 'inab',
       },
       accessTokenTTL: 3600,
       refreshTokenTTL: 2592000, // 30 days
