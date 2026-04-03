@@ -1,0 +1,5 @@
+node_modules/
+dist/
+.wrangler/
+spec/ynab-spec.json
+worker-configuration.d.ts
