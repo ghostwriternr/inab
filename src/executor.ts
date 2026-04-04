@@ -29,6 +29,7 @@ const apiBase = ${JSON.stringify(apiBase)};
 
 export default class ExecuteExecutor extends WorkerEntrypoint {
   async evaluate() {
+    const r2 = this.env.R2;
     const ynab = {
       async request(path, options = {}) {
         const { method = 'GET', query, body, headers: extraHeaders = {} } = options;
@@ -110,6 +111,7 @@ export function createCodeExecutor(env: Env, ctx: ExecutionContext) {
     const worker = env.LOADER.get(workerId, () => ({
       compatibilityDate: '2026-03-23',
       globalOutbound: ctx.exports.GlobalOutbound({ props: { apiToken } }),
+      env: { R2: ctx.exports.R2Proxy({}) },
       mainModule: 'worker.js',
       modules: { 'worker.js': buildExecuteWorkerCode(env.YNAB_API_BASE, code) }
     }))

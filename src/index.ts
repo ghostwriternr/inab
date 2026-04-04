@@ -8,6 +8,7 @@ import type { YnabOAuthProps } from './auth/ynab-auth'
 import specData from '../spec/ynab-spec.json'
 
 export { GlobalOutbound } from './global-outbound'
+export { R2Proxy } from './r2-proxy'
 
 const specJson = JSON.stringify(specData)
 

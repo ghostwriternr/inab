@@ -21,6 +21,17 @@
 			"binding": "GLOBAL_OUTBOUND",
 			"service": "inab",
 			"entrypoint": "GlobalOutbound"
+		},
+		{
+			"binding": "R2_PROXY",
+			"service": "inab",
+			"entrypoint": "R2Proxy"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "STAGING_R2",
+			"bucket_name": "inab-staging"
 		}
 	],
 	"kv_namespaces": [

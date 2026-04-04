@@ -20,6 +20,13 @@ declare const ynab: {
   }): Promise<unknown>
 }
 
+/** Available in the execute tool for reading staged data */
+declare const r2: {
+  get(key: string): Promise<string | null>
+  put(key: string, value: string): Promise<void>
+  delete(key: string): Promise<void>
+}
+
 /** YNAB data notes:
  * - Currency amounts are in milliunits (1000ths): $1.23 = 1230
  * - Dates are ISO 8601: "2025-12-30"
@@ -79,7 +86,7 @@ export async function createServer(
     'execute',
     {
       title: 'Execute YNAB API Call',
-      description: `Call the YNAB API using \`ynab.request(path, options)\`. Auth is automatic.\n\n${YNAB_TYPES}`,
+      description: `Call the YNAB API using \`ynab.request(path, options)\`. Auth is automatic. Use \`r2.get(key)\` to read staged data from R2.\n\n${YNAB_TYPES}`,
       inputSchema: {
         code: z
           .string()
